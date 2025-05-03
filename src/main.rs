@@ -1,4 +1,4 @@
-use basic_hash_ring::HashRing;
+use basic_hash_ring::{Direction, HashRing};
 use std::collections::HashMap;
 use std::time::Instant;
 
@@ -159,8 +159,13 @@ fn main() {
 
     // Get N nodes
     let start = Instant::now();
-    let n_nodes = hash_ring.get_n("test-key", 3);
-    println!("Get 3 nodes: {:?}", start.elapsed());
+    let n_nodes = hash_ring.get_n("test-key", 3, Direction::Forward);
+    println!("Get 3 nodes (forward): {:?}", start.elapsed());
+    println!("Nodes: {:?}", n_nodes);
+
+    let start = Instant::now();
+    let n_nodes = hash_ring.get_n("test-key", 3, Direction::Backward);
+    println!("Get 3 nodes (backward): {:?}", start.elapsed());
     println!("Nodes: {:?}", n_nodes);
 
     // Benchmark a large number of lookups

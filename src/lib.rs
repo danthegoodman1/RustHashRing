@@ -1,6 +1,11 @@
 use std::collections::{HashMap, HashSet};
 use xxhash_rust::xxh3::xxh3_64;
 
+pub enum Direction {
+    Forward,
+    Backward,
+}
+
 pub struct HashRing {
     replicas: usize,
     sorted_keys: Vec<u64>,
@@ -72,7 +77,8 @@ impl HashRing {
 
     /// Returns the <=N unique nodes that are closest to the key in order.
     /// Useful for choosing replica groups for distributed systems (e.g. Raft group)
-    pub fn get_n(&self, key: &str, n: usize) -> Vec<String> {
+    /// By default, the nodes are returned in ascending order of the hash ring.
+    pub fn get_n(&self, key: &str, n: usize, direction: Direction) -> Vec<String> {
       let mut result: Vec<String> = Vec::new();
       let mut _node_map:HashSet<String> = HashSet::new();
 
@@ -88,14 +94,29 @@ impl HashRing {
         Err(idx) => idx % self.sorted_keys.len(),
       };
 
-      // Iterate over the sorted keys and add unique nodes until we have N or hit the end of the list
-      for i in idx..self.sorted_keys.len() {
-        let node = &self.hash_map[&self.sorted_keys[i]];
+      let mut current_idx = idx;
+      while result.len() < n {
+        let node = &self.hash_map[&self.sorted_keys[current_idx]];
         if _node_map.insert(node.clone()) {
           result.push(node.clone());
-          if result.len() == n {
+        }
+
+        match direction {
+            Direction::Forward => {
+                current_idx = (current_idx + 1) % self.sorted_keys.len();
+            }
+            Direction::Backward => {
+                if current_idx == 0 {
+                    current_idx = self.sorted_keys.len() - 1;
+                } else {
+                    current_idx -= 1;
+                }
+            }
+        }
+
+        // Break if we hit the start point again (haven't found enough nodes)
+        if current_idx == idx {
             break;
-          }
         }
       }
 
