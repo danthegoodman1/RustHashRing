@@ -1,7 +1,6 @@
 use RustHashRing::HashRing;
 use std::collections::HashMap;
 use std::time::Instant;
-use xxhash_rust::xxh3::xxh3_64;
 
 fn main() {
     println!("HashRing Consistency Test");
