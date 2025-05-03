@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use xxhash_rust::xxh3::xxh3_64;
 
 pub struct HashRing {
@@ -53,6 +53,7 @@ impl HashRing {
         }
     }
 
+    /// An optimized version of get_n that returns a single node.
     pub fn get(&self, key: &str) -> Option<&String> {
         if self.is_empty() {
           return None;
@@ -67,6 +68,38 @@ impl HashRing {
         };
 
         Some(&self.hash_map[&self.sorted_keys[idx]])
+    }
+
+    /// Returns the <=N unique nodes that are closest to the key in order.
+    /// Useful for choosing replica groups for distributed systems (e.g. Raft group)
+    pub fn get_n(&self, key: &str, n: usize) -> Vec<String> {
+      let mut result: Vec<String> = Vec::new();
+      let mut _node_map:HashSet<String> = HashSet::new();
+
+      if self.is_empty() || n == 0 {
+          return result;
+      }
+
+      let hash = xxh3_64(key.as_bytes());
+      let idx = match self.sorted_keys.binary_search(&hash) {
+        // Exact match
+        Ok(idx) => idx,
+        // Not an exact match, get the first node that has a hash greater than the key hash
+        Err(idx) => idx % self.sorted_keys.len(),
+      };
+
+      // Iterate over the sorted keys and add unique nodes until we have N or hit the end of the list
+      for i in idx..self.sorted_keys.len() {
+        let node = &self.hash_map[&self.sorted_keys[i]];
+        if _node_map.insert(node.clone()) {
+          result.push(node.clone());
+          if result.len() == n {
+            break;
+          }
+        }
+      }
+
+      result
     }
 
 }

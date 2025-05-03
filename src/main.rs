@@ -1,7 +1,7 @@
-use xxhash_rust::xxh3::xxh3_64;
 use RustHashRing::HashRing;
 use std::collections::HashMap;
 use std::time::Instant;
+use xxhash_rust::xxh3::xxh3_64;
 
 fn main() {
     println!("HashRing Consistency Test");
@@ -20,7 +20,7 @@ fn main() {
         "node2.example.com".to_string(),
         "node3.example.com".to_string(),
     ];
-    
+
     let start = Instant::now();
     hash_ring.add(&nodes);
     println!("Adding 3 nodes: {:?}", start.elapsed());
@@ -155,7 +155,15 @@ fn main() {
         }
     }
     println!("Lookup of 12 different pattern keys: {:?}", start.elapsed());
-    
+
+    println!();
+
+    // Get N nodes
+    let start = Instant::now();
+    let n_nodes = hash_ring.get_n("test-key", 3);
+    println!("Get 3 nodes: {:?}", start.elapsed());
+    println!("Nodes: {:?}", n_nodes);
+
     // Benchmark a large number of lookups
     let start = Instant::now();
     for i in 0..100_000 {
