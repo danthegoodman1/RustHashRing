@@ -1,4 +1,4 @@
-use RustHashRing::HashRing;
+use basic_hash_ring::HashRing;
 use std::collections::HashMap;
 use std::time::Instant;
 
