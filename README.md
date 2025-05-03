@@ -1,4 +1,6 @@
-# Rust Hash Ring
+# basic_hash_ring
+
+[docs.rs](https://docs.rs/basic_hash_ring/latest/basic_hash_ring/) [crates.io](https://crates.io/crates/basic_hash_ring)
 
 Mostly a Rust impl of https://github.com/golang/groupcache/blob/master/consistenthash/consistenthash.go
 
